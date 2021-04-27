@@ -351,6 +351,8 @@ ZSet | 字符串成员(member)与浮点数分值(score)之间的有序映射，�
 ```
 
 ##### application.yml 配置
+
+###### 单点模式
 ```yaml
 spring:
   cache:
@@ -360,6 +362,7 @@ spring:
   redis:
     host: localhost
     port: 6379
+    password: 123456
     database: 4
     timeout: 10000ms
     lettuce:
@@ -370,7 +373,53 @@ spring:
         max-wait: 10000ms
 ```
 
-##### 使用RedisUtil工具类方法如下：
+###### 集群模式
+```yaml
+spring:
+  # redis 缓存配置
+  cache:
+    redis:
+      time-to-live: 60s
+    type: redis
+  redis:
+    database: 4
+    timeout: 10000ms
+    password: 123456
+    cluster:
+      nodes: 192.168.0.203:6379,192.168.0.203:6380,192.168.0.203:6381 # 集群列表
+      max-redirects: 3 # 跨集群最大重定向数
+    lettuce:
+      pool:
+        max-active: 10
+        max-idle: 10
+        min-idle: 5
+        max-wait: 10000ms
+```
+
+###### 哨兵模式
+```yaml
+spring:
+  # redis 缓存配置
+  cache:
+    redis:
+      time-to-live: 60s
+    type: redis
+  redis:
+    database: 4
+    timeout: 10000ms
+    sentinel:
+      master: master 哨兵集群名称
+      nodes: 192.168.0.203:6379,192.168.0.203:6380,192.168.0.203:6381 # 哨兵节点
+      password: 123456  # 如果有密码则设置密码
+    lettuce:
+      pool:
+        max-active: 10
+        max-idle: 10
+        min-idle: 5
+        max-wait: 10000ms
+```
+
+##### 使用RedisUtils工具类方法如下：
 ```java
 @Autowired
 private RedisUtils redisUtils;
