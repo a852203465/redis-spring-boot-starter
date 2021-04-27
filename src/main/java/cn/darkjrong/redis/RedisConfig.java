@@ -89,7 +89,6 @@ public class RedisConfig extends CachingConfigurerSupport {
                         || properties.getRedis().getTimeToLive().isZero())
                         ? timeToLive : properties.getRedis().getTimeToLive());
 
-
         RedisCacheManager.RedisCacheManagerBuilder builder = RedisCacheManager.RedisCacheManagerBuilder
                 .fromConnectionFactory(lettuceConnectionFactory)
                 .cacheDefaults(config)
@@ -107,9 +106,6 @@ public class RedisConfig extends CachingConfigurerSupport {
     public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory lettuceConnectionFactory) {
 
         RedisTemplate<String, Object> template = new RedisTemplate<>();
-
-        //使用fastjson序列化
-        //FastJsonRedisSerializer<Object> fastJsonRedisSerializer = new FastJsonRedisSerializer<>(Object.class);
 
         // value值的序列化采用fastJsonRedisSerializer
         template.setValueSerializer(valueSerializer());
