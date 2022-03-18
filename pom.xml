@@ -17,6 +17,11 @@
         </developer>
     </developers>
 
+    <scm>
+        <url>https://github.com/a852203465</url>
+        <connection>https://github.com/a852203465/redis-spring-boot-starter.git</connection>
+    </scm>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -36,11 +41,6 @@
             <version>${spring-boot.version}</version>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-            <version>${spring-boot.version}</version>
-        </dependency>
 
         <!--整合redis-->
         <dependency>
@@ -58,19 +58,19 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-pool2</artifactId>
-            <version>2.4.3</version>
+            <version>2.11.1</version>
         </dependency>
 
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.76</version>
+            <version>1.2.79</version>
         </dependency>
 
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-core</artifactId>
-            <version>5.6.3</version>
+            <version>5.7.22</version>
         </dependency>
 
     </dependencies>
