@@ -28,21 +28,19 @@ import java.time.Duration;
 @Configuration
 public class RedisConfig extends CachingConfigurerSupport {
 
-    private Duration timeToLive = Duration.ofSeconds(60);
+    private final Duration timeToLive = Duration.ofSeconds(60);
+    private final LettuceConnectionFactory lettuceConnectionFactory;
+    private final CacheProperties cacheProperties;
 
-    private LettuceConnectionFactory lettuceConnectionFactory;
-    private CacheProperties properties;
-
-    public RedisConfig(LettuceConnectionFactory lettuceConnectionFactory, CacheProperties properties) {
+    public RedisConfig(LettuceConnectionFactory lettuceConnectionFactory, CacheProperties cacheProperties) {
         this.lettuceConnectionFactory = lettuceConnectionFactory;
-        this.properties = properties;
+        this.cacheProperties = cacheProperties;
     }
 
     /**
      * 在没有指定缓存Key的情况下，key生成策略
      *
-     * @return KeyGenerator
-     * @date 2019/04/22 14:02:22
+     * @return {@link KeyGenerator} key生成策略
      */
     @Bean
     @Override
@@ -64,8 +62,7 @@ public class RedisConfig extends CachingConfigurerSupport {
     /**
      * 缓存管理器 使用Lettuce，和jedis有很大不同
      *
-     * @return CacheManager 缓存管理器
-     * @date 2019/04/22 14:02:22
+     * @return {@link CacheManager} 缓存管理器
      */
     @Bean
     @Primary
@@ -84,10 +81,10 @@ public class RedisConfig extends CachingConfigurerSupport {
                 .disableCachingNullValues()
 
                 //缓存过期时间
-                .entryTtl((properties.getRedis() == null
-                        || properties.getRedis().getTimeToLive() == null
-                        || properties.getRedis().getTimeToLive().isZero())
-                        ? timeToLive : properties.getRedis().getTimeToLive());
+                .entryTtl((cacheProperties.getRedis() == null
+                        || cacheProperties.getRedis().getTimeToLive() == null
+                        || cacheProperties.getRedis().getTimeToLive().isZero())
+                        ? timeToLive : cacheProperties.getRedis().getTimeToLive());
 
         RedisCacheManager.RedisCacheManagerBuilder builder = RedisCacheManager.RedisCacheManagerBuilder
                 .fromConnectionFactory(lettuceConnectionFactory)
@@ -100,8 +97,8 @@ public class RedisConfig extends CachingConfigurerSupport {
     /**
      * RedisTemplate配置 在单独使用redisTemplate的时候 重新定义序列化方式
      *
+     * @param lettuceConnectionFactory 连接工厂
      * @return RedisTemplate<String, Object>
-     * @date 2019/04/22 14:02:22
      */
     @Bean
     public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory lettuceConnectionFactory) {
@@ -134,12 +131,11 @@ public class RedisConfig extends CachingConfigurerSupport {
     /**
      * 注入封装RedisTemplate
      *
-     * @return RedisUtils
-     * @author Rong.Jia
-     * @date 2019/01/14 17:20
+     * @param redisTemplate {@link RedisTemplate}
+     * @return {@link RedisUtils}
      */
     @Bean(name = "redisUtils")
-    public RedisUtils redisUtil(RedisTemplate<String, Object> redisTemplate) {
+    public RedisUtils redisUtils(RedisTemplate<String, Object> redisTemplate) {
         RedisUtils redisUtils = new RedisUtils();
         redisUtils.setRedisTemplate(redisTemplate);
         return redisUtils;
