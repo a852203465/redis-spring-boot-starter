@@ -20,7 +20,8 @@ import java.lang.reflect.Method;
 import java.time.Duration;
 
 /**
- * redis 配置
+ * Redis 配置
+ *
  * @author Rong.Jia
  * @date 2019/01/14 17:20
  */
@@ -30,7 +31,7 @@ public class RedisConfig extends CachingConfigurerSupport {
     private Duration timeToLive = Duration.ofSeconds(60);
 
     private LettuceConnectionFactory lettuceConnectionFactory;
-	private CacheProperties properties;
+    private CacheProperties properties;
 
     public RedisConfig(LettuceConnectionFactory lettuceConnectionFactory, CacheProperties properties) {
         this.lettuceConnectionFactory = lettuceConnectionFactory;
@@ -39,8 +40,9 @@ public class RedisConfig extends CachingConfigurerSupport {
 
     /**
      * 在没有指定缓存Key的情况下，key生成策略
-     * @date 2019/04/22 14:02:22
+     *
      * @return KeyGenerator
+     * @date 2019/04/22 14:02:22
      */
     @Bean
     @Override
@@ -60,9 +62,10 @@ public class RedisConfig extends CachingConfigurerSupport {
     }
 
     /**
-     *  缓存管理器 使用Lettuce，和jedis有很大不同
-     * @date 2019/04/22 14:02:22
+     * 缓存管理器 使用Lettuce，和jedis有很大不同
+     *
      * @return CacheManager 缓存管理器
+     * @date 2019/04/22 14:02:22
      */
     @Bean
     @Primary
@@ -95,9 +98,10 @@ public class RedisConfig extends CachingConfigurerSupport {
     }
 
     /**
-     *  RedisTemplate配置 在单独使用redisTemplate的时候 重新定义序列化方式
-     * @date 2019/04/22 14:02:22
+     * RedisTemplate配置 在单独使用redisTemplate的时候 重新定义序列化方式
+     *
      * @return RedisTemplate<String, Object>
+     * @date 2019/04/22 14:02:22
      */
     @Bean
     public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory lettuceConnectionFactory) {
@@ -128,10 +132,11 @@ public class RedisConfig extends CachingConfigurerSupport {
     }
 
     /**
-     *  注入封装RedisTemplate
+     * 注入封装RedisTemplate
+     *
+     * @return RedisUtils
      * @author Rong.Jia
      * @date 2019/01/14 17:20
-     * @return RedisUtils
      */
     @Bean(name = "redisUtils")
     public RedisUtils redisUtil(RedisTemplate<String, Object> redisTemplate) {
