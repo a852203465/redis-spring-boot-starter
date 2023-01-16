@@ -6,7 +6,7 @@
 
     <groupId>cn.darkjrong</groupId>
     <artifactId>redis-spring-boot-starter</artifactId>
-    <version>1.0.0</version>
+    <version>1.0</version>
 
     <description>设置 Redis 配置</description>
 
@@ -26,19 +26,16 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <spring-boot.version>2.2.7.RELEASE</spring-boot.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
-            <version>${spring-boot.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
-            <version>${spring-boot.version}</version>
             <optional>true</optional>
         </dependency>
 
@@ -46,12 +43,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
-            <version>${spring-boot.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
-            <version>${spring-boot.version}</version>
         </dependency>
 
         <!--连接池，redis依赖-->
@@ -73,7 +68,21 @@
             <version>5.7.22</version>
         </dependency>
 
+
+
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>2.5.11</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <plugins>
