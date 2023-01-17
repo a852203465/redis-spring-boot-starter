@@ -64,7 +64,7 @@ public class RedisConfiguration extends CachingConfigurerSupport {
     }
 
     /**
-     * 缓存管理器 使用Lettuce，和jedis有很大不同
+     * 缓存管理器
      *
      * @return {@link CacheManager} 缓存管理器
      */
