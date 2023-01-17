@@ -1,5 +1,9 @@
 package cn.darkjrong.redis;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import org.springframework.boot.autoconfigure.cache.CacheProperties;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
@@ -9,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
@@ -26,14 +30,14 @@ import java.time.Duration;
  * @date 2019/01/14 17:20
  */
 @Configuration
-public class RedisConfig extends CachingConfigurerSupport {
+public class RedisConfiguration extends CachingConfigurerSupport {
 
     private final Duration timeToLive = Duration.ofSeconds(60);
-    private final LettuceConnectionFactory lettuceConnectionFactory;
+    private final RedisConnectionFactory redisConnectionFactory;
     private final CacheProperties cacheProperties;
 
-    public RedisConfig(LettuceConnectionFactory lettuceConnectionFactory, CacheProperties cacheProperties) {
-        this.lettuceConnectionFactory = lettuceConnectionFactory;
+    public RedisConfiguration(RedisConnectionFactory redisConnectionFactory, CacheProperties cacheProperties) {
+        this.redisConnectionFactory = redisConnectionFactory;
         this.cacheProperties = cacheProperties;
     }
 
@@ -87,7 +91,7 @@ public class RedisConfig extends CachingConfigurerSupport {
                         ? timeToLive : cacheProperties.getRedis().getTimeToLive());
 
         RedisCacheManager.RedisCacheManagerBuilder builder = RedisCacheManager.RedisCacheManagerBuilder
-                .fromConnectionFactory(lettuceConnectionFactory)
+                .fromConnectionFactory(redisConnectionFactory)
                 .cacheDefaults(config)
                 .transactionAware();
 
@@ -97,11 +101,11 @@ public class RedisConfig extends CachingConfigurerSupport {
     /**
      * RedisTemplate配置 在单独使用redisTemplate的时候 重新定义序列化方式
      *
-     * @param lettuceConnectionFactory 连接工厂
+     * @param redisConnectionFactory 连接工厂
      * @return RedisTemplate<String, Object>
      */
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory lettuceConnectionFactory) {
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
 
         RedisTemplate<String, Object> template = new RedisTemplate<>();
 
@@ -114,7 +118,7 @@ public class RedisConfig extends CachingConfigurerSupport {
         // key的序列化采用StringRedisSerializer
         template.setKeySerializer(keySerializer());
 
-        template.setConnectionFactory(lettuceConnectionFactory);
+        template.setConnectionFactory(redisConnectionFactory);
         template.afterPropertiesSet();
 
         return template;
@@ -125,7 +129,12 @@ public class RedisConfig extends CachingConfigurerSupport {
     }
 
     private RedisSerializer<Object> valueSerializer() {
-        return new Jackson2JsonRedisSerializer<>(Object.class);
+        Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
+        ObjectMapper om = new ObjectMapper();
+        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        om.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL);
+        jackson2JsonRedisSerializer.setObjectMapper(om);
+        return jackson2JsonRedisSerializer;
     }
 
     /**

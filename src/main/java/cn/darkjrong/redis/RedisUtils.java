@@ -1,5 +1,6 @@
 package cn.darkjrong.redis;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONValidator;
@@ -219,9 +220,11 @@ public class RedisUtils {
      */
     public <T> T get(String key, Class<T> tClass) {
         Object object = get(key);
-        return object == null ? null
-                : JSONObject.parseObject(JSONValidator.from(object.toString()).validate()
-                ? object.toString() : JSON.toJSONString(object), tClass);
+        if (ObjectUtil.isNotNull(object)) {
+            String json = JSONValidator.from(object.toString()).validate() ? object.toString() : JSON.toJSONString(object);
+            return JSONObject.parseObject(json, tClass);
+        }
+       return null;
     }
 
     /**
@@ -233,10 +236,11 @@ public class RedisUtils {
      */
     public <T> T get(String key, TypeReference<T> tTypeReference) {
         Object object = get(key);
-        return object == null ? null
-                : JSONObject.parseObject(JSONValidator.from(object.toString()).validate()
-                ? object.toString() : JSON.toJSONString(object), tTypeReference);
-
+        if (ObjectUtil.isNotNull(object)) {
+            String json = JSONValidator.from(object.toString()).validate() ? object.toString() : JSON.toJSONString(object);
+            return JSONObject.parseObject(json, tTypeReference);
+        }
+        return null;
     }
 
     /**
