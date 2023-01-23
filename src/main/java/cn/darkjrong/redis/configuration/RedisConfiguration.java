@@ -1,5 +1,8 @@
-package cn.darkjrong.redis;
+package cn.darkjrong.redis.configuration;
 
+import cn.darkjrong.redis.RedisUtils;
+import cn.darkjrong.redis.configuration.serializer.RedisKeySerializer;
+import cn.darkjrong.redis.configuration.serializer.RedisValueSerializer;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,7 +21,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.RedisSerializer;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
@@ -35,10 +37,17 @@ public class RedisConfiguration extends CachingConfigurerSupport {
     private final Duration timeToLive = Duration.ofSeconds(60);
     private final RedisConnectionFactory redisConnectionFactory;
     private final CacheProperties cacheProperties;
+    private final RedisKeySerializer redisKeySerializer;
+    private final RedisValueSerializer<?> redisValueSerializer;
 
-    public RedisConfiguration(RedisConnectionFactory redisConnectionFactory, CacheProperties cacheProperties) {
+    public RedisConfiguration(RedisConnectionFactory redisConnectionFactory,
+                              CacheProperties cacheProperties,
+                              RedisKeySerializer redisKeySerializer,
+                              RedisValueSerializer<?> redisValueSerializer) {
         this.redisConnectionFactory = redisConnectionFactory;
         this.cacheProperties = cacheProperties;
+        this.redisKeySerializer = redisKeySerializer;
+        this.redisValueSerializer = redisValueSerializer;
     }
 
     /**
@@ -77,10 +86,10 @@ public class RedisConfiguration extends CachingConfigurerSupport {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
 
                 //key序列化方式
-                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(keySerializer()))
+                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(redisKeySerializer))
 
                 //value序列化方式
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(valueSerializer()))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(redisValueSerializer))
 
                 .disableCachingNullValues()
 
@@ -110,13 +119,13 @@ public class RedisConfiguration extends CachingConfigurerSupport {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
 
         // value值的序列化采用fastJsonRedisSerializer
-        template.setValueSerializer(valueSerializer());
-        template.setHashValueSerializer(valueSerializer());
+        template.setValueSerializer(redisValueSerializer);
+        template.setHashValueSerializer(redisValueSerializer);
 
-        template.setHashKeySerializer(keySerializer());
+        template.setHashKeySerializer(redisKeySerializer);
 
         // key的序列化采用StringRedisSerializer
-        template.setKeySerializer(keySerializer());
+        template.setKeySerializer(redisKeySerializer);
 
         template.setConnectionFactory(redisConnectionFactory);
         template.afterPropertiesSet();
@@ -124,9 +133,9 @@ public class RedisConfiguration extends CachingConfigurerSupport {
         return template;
     }
 
-    private RedisSerializer<String> keySerializer() {
-        return new StringRedisSerializer();
-    }
+//    private RedisSerializer<String> keySerializer() {
+//        return new StringRedisSerializer();
+//    }
 
     private RedisSerializer<Object> valueSerializer() {
         Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(Object.class);

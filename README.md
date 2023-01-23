@@ -365,6 +365,7 @@ spring:
     password: 123456
     database: 4
     timeout: 10000ms
+    client-type: lettuce
     lettuce:
       pool:
         max-active: 10
@@ -385,6 +386,7 @@ spring:
     database: 4
     timeout: 10000ms
     password: 123456
+    client-type: lettuce
     cluster:
       nodes: 192.168.0.203:6379,192.168.0.203:6380,192.168.0.203:6381 # 集群列表
       max-redirects: 3 # 跨集群最大重定向数
@@ -407,6 +409,7 @@ spring:
   redis:
     database: 4
     timeout: 10000ms
+    client-type: lettuce
     sentinel:
       master: master 哨兵集群名称
       nodes: 192.168.0.203:6379,192.168.0.203:6380,192.168.0.203:6381 # 哨兵节点
@@ -424,6 +427,41 @@ spring:
 @Autowired
 private RedisUtils redisUtils;
 ```
+
+##### 自定义Redis(Key,Value)序列化方式
+###### 自定义Redis(Key)序列化方式
+```java
+/**
+ * 自定义 Redis key序列化器
+ *
+ * @author Rong.Jia
+ * @date 2023/01/23
+ */
+@Component
+public class CustomRedisKeySerializer extends StringRedisSerializer implements RedisKeySerializer {
+}
+```
+###### 自定义Redis(Value)序列化方式
+```java
+/**
+ * 自定义 Redis 值序列化器
+ *
+ * @author Rong.Jia
+ * @date 2023/01/23
+ */
+@Component
+public class CustomRedisValueSerializer extends FastJsonRedisSerializer<Object> implements RedisValueSerializer<Object> {
+
+    public CustomRedisValueSerializer() {
+        super(Object.class);
+    }
+}
+```
+
+
+
+
+
 
 
 
