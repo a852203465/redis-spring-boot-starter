@@ -14,8 +14,8 @@ import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
  */
 public class DefaultRedisValueSerializer extends Jackson2JsonRedisSerializer<Object> implements RedisValueSerializer<Object> {
 
-    public DefaultRedisValueSerializer(Class<Object> type) {
-        super(type);
+    public DefaultRedisValueSerializer() {
+        super(Object.class);
     }
 
     /**

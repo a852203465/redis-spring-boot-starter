@@ -30,7 +30,7 @@ public class RedisSerializeAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(RedisValueSerializer.class)
     public RedisValueSerializer<?> valueSerializer() {
-        DefaultRedisValueSerializer defaultRedisValueSerializer = new DefaultRedisValueSerializer(Object.class);
+        DefaultRedisValueSerializer defaultRedisValueSerializer = new DefaultRedisValueSerializer();
         defaultRedisValueSerializer.setObjectMapper();
         return defaultRedisValueSerializer;
     }
