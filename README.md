@@ -5,6 +5,8 @@
 ## 版本说明
 ### v1.0
     Spring Boot: 2.5.11
+### v1.1
+    Spring Boot: 2.7.8
 
 ## 对RedisUtils 说明
 
