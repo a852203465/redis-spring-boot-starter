@@ -3,10 +3,6 @@ package cn.darkjrong.redis.configuration;
 import cn.darkjrong.redis.RedisUtils;
 import cn.darkjrong.redis.configuration.serializer.RedisKeySerializer;
 import cn.darkjrong.redis.configuration.serializer.RedisValueSerializer;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import org.springframework.boot.autoconfigure.cache.CacheProperties;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
@@ -18,9 +14,7 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
-import org.springframework.data.redis.serializer.RedisSerializer;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
@@ -131,19 +125,6 @@ public class RedisConfiguration extends CachingConfigurerSupport {
         template.afterPropertiesSet();
 
         return template;
-    }
-
-//    private RedisSerializer<String> keySerializer() {
-//        return new StringRedisSerializer();
-//    }
-
-    private RedisSerializer<Object> valueSerializer() {
-        Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
-        ObjectMapper om = new ObjectMapper();
-        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        om.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL);
-        jackson2JsonRedisSerializer.setObjectMapper(om);
-        return jackson2JsonRedisSerializer;
     }
 
     /**
