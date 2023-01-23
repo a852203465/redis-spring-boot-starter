@@ -1,5 +1,9 @@
 package cn.darkjrong.redis.configuration.serializer;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 
 /**
@@ -13,4 +17,16 @@ public class DefaultRedisValueSerializer extends Jackson2JsonRedisSerializer<Obj
     public DefaultRedisValueSerializer(Class<Object> type) {
         super(type);
     }
+
+    /**
+     * set 对象映射器
+     */
+    public void setObjectMapper() {
+        ObjectMapper om = new ObjectMapper();
+        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        om.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL);
+        this.setObjectMapper(om);
+    }
+
+
 }

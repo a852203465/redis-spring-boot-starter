@@ -4,10 +4,6 @@ import cn.darkjrong.redis.configuration.serializer.DefaultRedisKeySerializer;
 import cn.darkjrong.redis.configuration.serializer.DefaultRedisValueSerializer;
 import cn.darkjrong.redis.configuration.serializer.RedisKeySerializer;
 import cn.darkjrong.redis.configuration.serializer.RedisValueSerializer;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import org.springframework.boot.autoconfigure.cache.CacheProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -35,10 +31,7 @@ public class RedisSerializeAutoConfiguration {
     @ConditionalOnMissingBean(RedisValueSerializer.class)
     public RedisValueSerializer<?> valueSerializer() {
         DefaultRedisValueSerializer defaultRedisValueSerializer = new DefaultRedisValueSerializer(Object.class);
-        ObjectMapper om = new ObjectMapper();
-        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        om.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL);
-        defaultRedisValueSerializer.setObjectMapper(om);
+        defaultRedisValueSerializer.setObjectMapper();
         return defaultRedisValueSerializer;
     }
 
