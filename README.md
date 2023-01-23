@@ -2,6 +2,10 @@
 
  将项目clone后， 使用IDE工具打包至私库或者本地maven仓库
 
+## 版本说明
+### v1.0
+    Spring Boot: 2.5.11
+
 ## 对RedisUtils 说明
 
 [Redis知识补充](#知识补充) <br/>
