@@ -1,9 +1,6 @@
 package cn.darkjrong.redis;
 
-import cn.hutool.core.util.ObjectUtil;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.JSONValidator;
+import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.TypeReference;
 import org.springframework.data.redis.connection.DataType;
 import org.springframework.data.redis.core.Cursor;
@@ -12,8 +9,8 @@ import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Redis工具类
@@ -219,12 +216,7 @@ public class RedisUtils {
      * @return {@link T} 返回值
      */
     public <T> T get(String key, Class<T> tClass) {
-        Object object = get(key);
-        if (ObjectUtil.isNotNull(object)) {
-            String json = JSONValidator.from(object.toString()).validate() ? object.toString() : JSON.toJSONString(object);
-            return JSONObject.parseObject(json, tClass);
-        }
-       return null;
+        return BeanUtils.copyProperties(get(key), tClass);
     }
 
     /**
@@ -235,12 +227,7 @@ public class RedisUtils {
      * @return {@link T} 返回值
      */
     public <T> T get(String key, TypeReference<T> tTypeReference) {
-        Object object = get(key);
-        if (ObjectUtil.isNotNull(object)) {
-            String json = JSONValidator.from(object.toString()).validate() ? object.toString() : JSON.toJSONString(object);
-            return JSONObject.parseObject(json, tTypeReference);
-        }
-        return null;
+        return BeanUtils.copyProperties(get(key), tTypeReference);
     }
 
     /**
@@ -285,6 +272,32 @@ public class RedisUtils {
      */
     public List<Object> multiGet(Collection<String> keys) {
         return redisTemplate.opsForValue().multiGet(keys);
+    }
+
+    /**
+     * 批量获取
+     *
+     * @param <T>    目标对象泛型
+     * @param tClass 目标对象类型
+     * @param keys   keys
+     * @return {@link List}<{@link Object}>
+     */
+    public <T> List<T> multiGet(Collection<String> keys, Class<T> tClass) {
+        List<Object> objects = redisTemplate.opsForValue().multiGet(keys);
+        return BeanUtils.copyProperties(objects, tClass);
+    }
+
+    /**
+     * 批量获取
+     *
+     * @param <T>            目标对象泛型
+     * @param tTypeReference 目标对象类型
+     * @param keys           keys
+     * @return {@link List}<{@link Object}>
+     */
+    public <T> List<T> multiGet(Collection<String> keys, TypeReference<T> tTypeReference) {
+        List<Object> objects = redisTemplate.opsForValue().multiGet(keys);
+        return BeanUtils.copyProperties(objects, tTypeReference);
     }
 
     /**
@@ -441,7 +454,33 @@ public class RedisUtils {
     }
 
     /**
-     * 获取所有给定字段的值
+     * 获取存储在哈希表中指定字段的值
+     *
+     * @param tClass 目标对象类型
+     * @param <T>    目标对象泛型
+     * @param key    key
+     * @param field  字段名
+     * @return {@link T}
+     */
+    public <T> T hGet(String key, String field, Class<T> tClass) {
+        return BeanUtils.copyProperties(hGet(key, field), tClass);
+    }
+
+    /**
+     * 获取存储在哈希表中指定字段的值
+     *
+     * @param <T>            目标对象泛型
+     * @param tTypeReference 目标对象类型
+     * @param key            key
+     * @param field          字段名
+     * @return {@link T}
+     */
+    public <T> T hGet(String key, String field, TypeReference<T> tTypeReference) {
+        return BeanUtils.copyProperties(hGet(key, field), tTypeReference);
+    }
+
+    /**
+     * 获取哈希表中所有字段的值
      *
      * @param key key
      * @return {@link Map}<{@link Object}, {@link Object}>
@@ -451,14 +490,64 @@ public class RedisUtils {
     }
 
     /**
-     * 获取所有给定字段的值
+     * 获取哈希表中所有字段的值
+     *
+     * @param valueClass Value类型
+     * @param key        key
+     * @return {@link Map}<{@link String}, {@link V}>
+     */
+    public <V> Map<String, V> hGetAll(String key, Class<V> valueClass) {
+        return BeanUtils.copyProperties(hGetAll(key), String.class, valueClass);
+    }
+
+    /**
+     * 获取哈希表中所有字段的值
+     *
+     * @param key            key
+     * @param vTypeReference Value类型
+     * @return {@link Map}<{@link String}, {@link V}>
+     */
+    public <V> Map<String, V> hGetAll(String key, TypeReference<V> vTypeReference) {
+        return BeanUtils.copyProperties(hGetAll(key), new TypeReference<String>(){}, vTypeReference);
+    }
+
+    /**
+     * 获取在哈希表中给定字段的值
      *
      * @param key    key
      * @param fields 字段
      * @return {@link List}<{@link Object}>
      */
-    public List<Object> hMultiGet(String key, Collection<Object> fields) {
-        return redisTemplate.opsForHash().multiGet(key, fields);
+    public List<Object> hMultiGet(String key, Collection<String> fields) {
+        if (CollectionUtil.isNotEmpty(fields)) {
+            List<Object> fieldList = fields.stream().map(a -> (Object) a).collect(Collectors.toList());
+            return redisTemplate.opsForHash().multiGet(key, fieldList);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * 获取在哈希表中给定字段的值
+     *
+     * @param key    key
+     * @param fields 字段
+     * @param tClass 对象类型
+     * @return {@link List}<{@link T}>
+     */
+    public <T> List<T> hMultiGet(String key, Collection<String> fields, Class<T> tClass) {
+        return BeanUtils.copyProperties(this.hMultiGet(key, fields), tClass);
+    }
+
+    /**
+     * 获取在哈希表中给定字段的值
+     *
+     * @param key            key
+     * @param fields         字段
+     * @param tTypeReference 对象类型
+     * @return {@link List}<{@link T}>
+     */
+    public <T> List<T> hMultiGet(String key, Collection<String> fields, TypeReference<T> tTypeReference) {
+        return BeanUtils.copyProperties(this.hMultiGet(key, fields), tTypeReference);
     }
 
     /**
@@ -544,10 +633,14 @@ public class RedisUtils {
      * 获取所有哈希表中的字段
      *
      * @param key key
-     * @return {@link Set}<{@link Object}>
+     * @return {@link List}<{@link String}>
      */
-    public Set<Object> hKeys(String key) {
-        return redisTemplate.opsForHash().keys(key);
+    public List<String> hKeys(String key) {
+        Set<Object> keys = redisTemplate.opsForHash().keys(key);
+        if (CollectionUtil.isNotEmpty(keys)) {
+            return BeanUtils.copyProperties(keys, String.class);
+        }
+        return Collections.emptyList();
     }
 
     /**
@@ -571,13 +664,35 @@ public class RedisUtils {
     }
 
     /**
+     * 获取哈希表中所有值
+     *
+     * @param tClass 对象类型
+     * @param key    key
+     * @return {@link List}<{@link T}>
+     */
+    public <T> List<T> hValues(String key, Class<T> tClass) {
+        return BeanUtils.copyProperties(hValues(key), tClass);
+    }
+
+    /**
+     * 获取哈希表中所有值
+     *
+     * @param typeReference 对象类型
+     * @param key           key
+     * @return {@link List}<{@link T}>
+     */
+    public <T> List<T> hValues(String key, TypeReference<T> typeReference) {
+        return BeanUtils.copyProperties(hValues(key), typeReference);
+    }
+
+    /**
      * 迭代哈希表中的键值对
      *
      * @param key     key
      * @param options 操作选项
-     * @return {@link Cursor}<{@link Entry}<{@link Object}, {@link Object}>>
+     * @return {@link Cursor}<{@link Map.Entry}<{@link Object}, {@link Object}>>
      */
-    public Cursor<Entry<Object, Object>> hScan(String key, ScanOptions options) {
+    public Cursor<Map.Entry<Object, Object>> hScan(String key, ScanOptions options) {
         return redisTemplate.opsForHash().scan(key, options);
     }
 
