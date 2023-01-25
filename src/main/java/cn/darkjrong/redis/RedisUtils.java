@@ -690,10 +690,51 @@ public class RedisUtils {
      *
      * @param key     key
      * @param options 操作选项
-     * @return {@link Cursor}<{@link Map.Entry}<{@link Object}, {@link Object}>>
+     * @return {@link Map}<{@link Object}, {@link Object}>
      */
-    public Cursor<Map.Entry<Object, Object>> hScan(String key, ScanOptions options) {
-        return redisTemplate.opsForHash().scan(key, options);
+    public Map<Object, Object> hScan(String key, ScanOptions options) {
+        Cursor<Map.Entry<Object, Object>> cursor = redisTemplate.opsForHash().scan(key, options);
+        try {
+            return cursor.stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        }finally {
+            if (!cursor.isClosed()) cursor.close();
+        }
+    }
+
+    /**
+     * 迭代哈希表中的键值对
+     *
+     * @param key     key
+     * @param options 操作选项
+     * @param tClass  对象类型
+     * @return {@link Map}<{@link String}, {@link T}>
+     */
+    public <T> Map<String, T> hScan(String key, ScanOptions options, Class<T> tClass) {
+        Map<Object, Object> objectMap = this.hScan(key, options);
+        if (CollectionUtil.isNotEmpty(objectMap)) {
+            return objectMap.entrySet().stream()
+                    .collect(Collectors.toMap(a -> BeanUtils.copyProperties(a.getKey(), String.class),
+                    v -> BeanUtils.copyProperties(v.getValue(), tClass)));
+        }
+        return Collections.emptyMap();
+    }
+
+    /**
+     * 迭代哈希表中的键值对
+     *
+     * @param key     key
+     * @param options 操作选项
+     * @param typeReference  对象类型
+     * @return {@link Map}<{@link String}, {@link T}>
+     */
+    public <T> Map<String, T> hScan(String key, ScanOptions options, TypeReference<T> typeReference) {
+        Map<Object, Object> objectMap = this.hScan(key, options);
+        if (CollectionUtil.isNotEmpty(objectMap)) {
+            return objectMap.entrySet().stream()
+                    .collect(Collectors.toMap(a -> BeanUtils.copyProperties(a.getKey(), String.class),
+                            v -> BeanUtils.copyProperties(v.getValue(), typeReference)));
+        }
+        return Collections.emptyMap();
     }
 
     /* ------------------------list相关操作---------------------------- */
@@ -702,11 +743,35 @@ public class RedisUtils {
      * 通过索引获取列表中的元素
      *
      * @param key   key
-     * @param index 索引
+     * @param index 索引, 从0开始
      * @return {@link Object}
      */
     public Object lIndex(String key, long index) {
         return redisTemplate.opsForList().index(key, index);
+    }
+
+    /**
+     * 通过索引获取列表中的元素
+     *
+     * @param key    key
+     * @param index  索引, 从0开始
+     * @param tClass 对象类型
+     * @return {@link T}
+     */
+    public <T> T lIndex(String key, long index, Class<T> tClass) {
+        return BeanUtils.copyProperties(lIndex(key, index), tClass);
+    }
+
+    /**
+     * 通过索引获取列表中的元素
+     *
+     * @param key    key
+     * @param index  索引, 从0开始
+     * @param typeReference 对象类型
+     * @return {@link T}
+     */
+    public <T> T lIndex(String key, long index, TypeReference<T> typeReference) {
+        return BeanUtils.copyProperties(lIndex(key, index), typeReference);
     }
 
     /**
@@ -719,6 +784,32 @@ public class RedisUtils {
      */
     public List<Object> lRange(String key, long start, long end) {
         return redisTemplate.opsForList().range(key, start, end);
+    }
+
+    /**
+     * 获取列表指定范围内的元素
+     *
+     * @param start  开始位置, 0是开始位置
+     * @param end    结束位置, -1返回所有
+     * @param key    key
+     * @param tClass 对象类型
+     * @return {@link List}<{@link T}>
+     */
+    public <T> List<T> lRange(String key, long start, long end, Class<T> tClass) {
+        return BeanUtils.copyProperties(lRange(key, start, end), tClass);
+    }
+
+    /**
+     * 获取列表指定范围内的元素
+     *
+     * @param start  开始位置, 0是开始位置
+     * @param end    结束位置, -1返回所有
+     * @param key    key
+     * @param typeReference 对象类型
+     * @return {@link List}<{@link T}>
+     */
+    public <T> List<T> lRange(String key, long start, long end, TypeReference<T> typeReference) {
+        return BeanUtils.copyProperties(lRange(key, start, end), typeReference);
     }
 
     /**
@@ -855,6 +946,28 @@ public class RedisUtils {
     }
 
     /**
+     * 移出并获取列表的第一个元素
+     *
+     * @param key    key
+     * @param tClass 对象类型
+     * @return {@link T} 删除的元素
+     */
+    public <T> T lLeftPop(String key, Class<T> tClass) {
+        return BeanUtils.copyProperties(lLeftPop(key), tClass);
+    }
+
+    /**
+     * 移出并获取列表的第一个元素
+     *
+     * @param key    key
+     * @param typeReference 对象类型
+     * @return {@link T} 删除的元素
+     */
+    public <T> T lLeftPop(String key, TypeReference<T> typeReference) {
+        return BeanUtils.copyProperties(lLeftPop(key), typeReference);
+    }
+
+    /**
      * 移出并获取列表的第一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
      *
      * @param timeout 超时时间
@@ -864,6 +977,32 @@ public class RedisUtils {
      */
     public Object lBLeftPop(String key, long timeout, TimeUnit unit) {
         return redisTemplate.opsForList().leftPop(key, timeout, unit);
+    }
+
+    /**
+     * 移出并获取列表的第一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
+     *
+     * @param timeout 超时时间
+     * @param unit    时间单位
+     * @param key    key
+     * @param tClass 对象类型
+     * @return {@link T} 删除的元素
+     */
+    public <T> T lBLeftPop(String key, long timeout, TimeUnit unit, Class<T> tClass) {
+        return BeanUtils.copyProperties(lBLeftPop(key, timeout, unit), tClass);
+    }
+
+    /**
+     * 移出并获取列表的第一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
+     *
+     * @param timeout 超时时间
+     * @param unit    时间单位
+     * @param key    key
+     * @param typeReference 对象类型
+     * @return {@link T} 删除的元素
+     */
+    public <T> T lBLeftPop(String key, long timeout, TimeUnit unit, TypeReference<T> typeReference) {
+        return BeanUtils.copyProperties(lBLeftPop(key, timeout, unit), typeReference);
     }
 
     /**
@@ -877,6 +1016,28 @@ public class RedisUtils {
     }
 
     /**
+     * 移除并获取列表最后一个元素
+     *
+     * @param key    key
+     * @param tClass 对象类型
+     * @return {@link T} 删除的元素
+     */
+    public <T> T lRightPop(String key, Class<T> tClass) {
+        return BeanUtils.copyProperties(lRightPop(key), tClass);
+    }
+
+    /**
+     * 移除并获取列表最后一个元素
+     *
+     * @param key    key
+     * @param typeReference 对象类型
+     * @return {@link T} 删除的元素
+     */
+    public <T> T lRightPop(String key, TypeReference<T> typeReference) {
+        return BeanUtils.copyProperties(lRightPop(key), typeReference);
+    }
+
+    /**
      * 移出并获取列表的最后一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
      *
      * @param timeout 等待时间
@@ -886,6 +1047,32 @@ public class RedisUtils {
      */
     public Object lBRightPop(String key, long timeout, TimeUnit unit) {
         return redisTemplate.opsForList().rightPop(key, timeout, unit);
+    }
+
+    /**
+     * 移出并获取列表的最后一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
+     *
+     * @param timeout 超时时间
+     * @param unit    时间单位
+     * @param key    key
+     * @param tClass 对象类型
+     * @return {@link T} 删除的元素
+     */
+    public <T> T lBRightPop(String key, long timeout, TimeUnit unit, Class<T> tClass) {
+        return BeanUtils.copyProperties(lBRightPop(key, timeout, unit), tClass);
+    }
+
+    /**
+     * 移出并获取列表的最后一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
+     *
+     * @param timeout 超时时间
+     * @param unit    时间单位
+     * @param key    key
+     * @param typeReference 对象类型
+     * @return {@link T} 删除的元素
+     */
+    public <T> T lBRightPop(String key, long timeout, TimeUnit unit, TypeReference<T> typeReference) {
+        return BeanUtils.copyProperties(lBRightPop(key, timeout, unit), typeReference);
     }
 
     /**
