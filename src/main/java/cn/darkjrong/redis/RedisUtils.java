@@ -633,14 +633,42 @@ public class RedisUtils {
      * 获取所有哈希表中的字段
      *
      * @param key key
-     * @return {@link List}<{@link String}>
+     * @return {@link Set}<{@link Object}>
      */
-    public List<String> hKeys(String key) {
-        Set<Object> keys = redisTemplate.opsForHash().keys(key);
-        if (CollectionUtil.isNotEmpty(keys)) {
-            return BeanUtils.copyProperties(keys, String.class);
-        }
-        return Collections.emptyList();
+    public Set<Object> hKeys(String key) {
+        return redisTemplate.opsForHash().keys(key);
+    }
+
+    /**
+     * 获取所有哈希表中的字段
+     *
+     * @param key key
+     * @return {@link Set}<{@link String}>
+     */
+    public Set<String> hKeysToStr(String key) {
+        return hKeys(key, String.class);
+    }
+
+    /**
+     * 获取所有哈希表中的字段
+     *
+     * @param key key
+     * @param tClass 字段类型
+     * @return {@link Set}<{@link T}>
+     */
+    public <T> Set<T> hKeys(String key, Class<T> tClass) {
+        return BeanUtils.sCopyProperties(hKeys(key), tClass);
+    }
+
+    /**
+     * 获取所有哈希表中的字段
+     *
+     * @param key key
+     * @param typeReference 字段类型
+     * @return {@link Set}<{@link T}>
+     */
+    public <T> Set<T> hKeys(String key, TypeReference<T> typeReference) {
+        return BeanUtils.sCopyProperties(hKeys(key), typeReference);
     }
 
     /**
@@ -1193,7 +1221,7 @@ public class RedisUtils {
      * 将元素value从一个集合移到另一个集合
      *
      * @param key     key
-     * @param value   价值
+     * @param value   值
      * @param destKey 目标key
      * @return {@link Boolean}
      */
@@ -1215,7 +1243,7 @@ public class RedisUtils {
      * 判断集合是否包含value
      *
      * @param key   key
-     * @param value 价值
+     * @param value 值
      * @return {@link Boolean}
      */
     public Boolean sIsMember(String key, Object value) {
@@ -1438,10 +1466,10 @@ public class RedisUtils {
      *
      * @param key    key
      * @param tClass 对象类型
-     * @return {@link List}<{@link T}>
+     * @return {@link Set}<{@link T}>
      */
-    public <T> List<T> sMembers(String key, Class<T> tClass) {
-        return BeanUtils.copyProperties(sMembers(key), tClass);
+    public <T> Set<T> sMembers(String key, Class<T> tClass) {
+        return BeanUtils.sCopyProperties(sMembers(key), tClass);
     }
 
     /**
@@ -1449,10 +1477,10 @@ public class RedisUtils {
      *
      * @param key key
      * @param typeReference 对象类型
-     * @return {@link List}<{@link T}>
+     * @return {@link Set}<{@link T}>
      */
-    public <T> List<T> sMembers(String key, TypeReference<T> typeReference) {
-        return BeanUtils.copyProperties(sMembers(key), typeReference);
+    public <T> Set<T> sMembers(String key, TypeReference<T> typeReference) {
+        return BeanUtils.sCopyProperties(sMembers(key), typeReference);
     }
 
     /**
@@ -1539,10 +1567,10 @@ public class RedisUtils {
      * @param key    key
      * @param count  个数
      * @param tClass 对象类型
-     * @return {@link List}<{@link T}>
+     * @return {@link Set}<{@link T}>
      */
-    public <T> List<T> sDistinctRandomMembers(String key, long count, Class<T> tClass) {
-        return BeanUtils.copyProperties(sDistinctRandomMembers(key, count), tClass);
+    public <T> Set<T> sDistinctRandomMembers(String key, long count, Class<T> tClass) {
+        return BeanUtils.sCopyProperties(sDistinctRandomMembers(key, count), tClass);
     }
 
     /**
@@ -1551,10 +1579,10 @@ public class RedisUtils {
      * @param key    key
      * @param count  个数
      * @param typeReference 对象类型
-     * @return {@link List}<{@link T}>
+     * @return {@link Set}<{@link T}>
      */
-    public <T> List<T> sDistinctRandomMembers(String key, long count, TypeReference<T> typeReference) {
-        return BeanUtils.copyProperties(sDistinctRandomMembers(key, count), typeReference);
+    public <T> Set<T> sDistinctRandomMembers(String key, long count, TypeReference<T> typeReference) {
+        return BeanUtils.sCopyProperties(sDistinctRandomMembers(key, count), typeReference);
     }
 
     /**
@@ -1603,7 +1631,7 @@ public class RedisUtils {
      * 添加元素,有序集合是按照元素的score值由小到大排列
      *
      * @param key   key
-     * @param value 价值
+     * @param value 值
      * @param score 分数
      * @return {@link Boolean}
      */
@@ -1637,7 +1665,7 @@ public class RedisUtils {
      * 增加元素的score值，并返回增加后的值
      *
      * @param key   key
-     * @param value 价值
+     * @param value 值
      * @param delta δ
      * @return {@link Double}
      */
@@ -1649,7 +1677,7 @@ public class RedisUtils {
      * 返回元素在集合的排名,有序集合是按照元素的score值由小到大排列
      *
      * @param key   key
-     * @param value 价值
+     * @param value 值
      * @return 0表示第一位
      */
     public Long zRank(String key, Object value) {
@@ -1660,7 +1688,7 @@ public class RedisUtils {
      * 返回元素在集合的排名,按元素的score值由大到小排列
      *
      * @param key   key
-     * @param value 价值
+     * @param value 值
      * @return {@link Long}
      */
     public Long zReverseRank(String key, Object value) {
@@ -1680,6 +1708,32 @@ public class RedisUtils {
     }
 
     /**
+     * 获取集合的元素, 从小到大排序
+     *
+     * @param start  开始位置
+     * @param end    结束位置, -1查询所有
+     * @param key    key
+     * @param tClass 对象类型
+     * @return {@link Set}<{@link T}>
+     */
+    public <T> Set<T> zRange(String key, long start, long end, Class<T> tClass) {
+        return BeanUtils.zCopyProperties(zRange(key, start, end), tClass);
+    }
+
+    /**
+     * 获取集合的元素, 从小到大排序
+     *
+     * @param start  开始位置
+     * @param end    结束位置, -1查询所有
+     * @param key    key
+     * @param typeReference 对象类型
+     * @return {@link Set}<{@link T}>
+     */
+    public <T> Set<T> zRange(String key, long start, long end, TypeReference<T> typeReference) {
+        return BeanUtils.zCopyProperties(zRange(key, start, end), typeReference);
+    }
+
+    /**
      * 获取集合元素, 并且把score值也获取
      *
      * @param key   key
@@ -1692,6 +1746,34 @@ public class RedisUtils {
     }
 
     /**
+     * 获取集合元素, 并且把score值也获取
+     *
+     * @param key   key
+     * @param start 开始
+     * @param end   结束
+     * @param tClass 对象类型
+     * @return {@link Set}<{@link TypedTuple}<{@link Object}>>
+     */
+    public <T> Set<TypedTuple<T>> zRangeWithScores(String key, long start, long end, Class<T> tClass) {
+        Set<TypedTuple<Object>> typedTuples = zRangeWithScores(key, start, end);
+        return BeanUtils.ztCopyProperties(typedTuples, tClass);
+    }
+
+    /**
+     * 获取集合元素, 并且把score值也获取
+     *
+     * @param key   key
+     * @param start 开始
+     * @param end   结束
+     * @param typeReference 对象类型
+     * @return {@link Set}<{@link TypedTuple}<{@link Object}>>
+     */
+    public <T> Set<TypedTuple<T>> zRangeWithScores(String key, long start, long end, TypeReference<T> typeReference) {
+        Set<TypedTuple<Object>> typedTuples = zRangeWithScores(key, start, end);
+        return BeanUtils.ztCopyProperties(typedTuples, typeReference);
+    }
+
+    /**
      * 根据Score值查询集合元素
      *
      * @param min 最小值
@@ -1701,6 +1783,32 @@ public class RedisUtils {
      */
     public Set<Object> zRangeByScore(String key, double min, double max) {
         return redisTemplate.opsForZSet().rangeByScore(key, min, max);
+    }
+
+    /**
+     * 根据Score值查询集合元素
+     *
+     * @param min 最小值
+     * @param max 最大值
+     * @param key key
+     * @param tClass 对象类型
+     * @return {@link Set}<{@link T}>
+     */
+    public <T> Set<T> zRangeByScore(String key, double min, double max, Class<T> tClass) {
+        return BeanUtils.sCopyProperties(zRangeByScore(key, min, max), tClass);
+    }
+
+    /**
+     * 根据Score值查询集合元素
+     *
+     * @param min 最小值
+     * @param max 最大值
+     * @param key key
+     * @param tClass 对象类型
+     * @return {@link Set}<{@link T}>
+     */
+    public <T> Set<T> zRangeByScore(String key, double min, double max, TypeReference<T> typeReference) {
+        return BeanUtils.sCopyProperties(zRangeByScore(key, min, max), typeReference);
     }
 
     /**
@@ -1718,6 +1826,32 @@ public class RedisUtils {
     /**
      * 根据Score值查询集合元素, 从小到大排序
      *
+     * @param min 最小值
+     * @param max 最大值
+     * @param key key
+     * @param tClass 对象类型
+     * @return {@link Set}<{@link TypedTuple}<{@link T}>>
+     */
+    public <T> Set<TypedTuple<T>> zRangeByScoreWithScores(String key, double min, double max, Class<T> tClass) {
+        return BeanUtils.ztCopyProperties(zRangeByScoreWithScores(key, min, max), tClass);
+    }
+
+    /**
+     * 根据Score值查询集合元素, 从小到大排序
+     *
+     * @param min 最小值
+     * @param max 最大值
+     * @param key key
+     * @param tClass 对象类型
+     * @return {@link Set}<{@link TypedTuple}<{@link T}>>
+     */
+    public <T> Set<TypedTuple<T>> zRangeByScoreWithScores(String key, double min, double max, TypeReference<T> typeReference) {
+        return BeanUtils.ztCopyProperties(zRangeByScoreWithScores(key, min, max), typeReference);
+    }
+
+    /**
+     * 根据Score值查询集合元素, 从小到大排序
+     *
      * @param key   key
      * @param min   最小值
      * @param max   最大值
@@ -1727,6 +1861,36 @@ public class RedisUtils {
      */
     public Set<TypedTuple<Object>> zRangeByScoreWithScores(String key, double min, double max, long start, long end) {
         return redisTemplate.opsForZSet().rangeByScoreWithScores(key, min, max, start, end);
+    }
+
+    /**
+     * 根据Score值查询集合元素, 从小到大排序
+     *
+     * @param key   key
+     * @param min   最小值
+     * @param max   最大值
+     * @param start 开始
+     * @param end   结束
+     * @param tClass 对象类型
+     * @return {@link Set}<{@link TypedTuple}<{@link T}>>
+     */
+    public <T> Set<TypedTuple<T>> zRangeByScoreWithScores(String key, double min, double max, long start, long end, Class<T> tClass) {
+        return BeanUtils.ztCopyProperties(zRangeByScoreWithScores(key, min, max, start, end), tClass);
+    }
+
+    /**
+     * 根据Score值查询集合元素, 从小到大排序
+     *
+     * @param key   key
+     * @param min   最小值
+     * @param max   最大值
+     * @param start 开始
+     * @param end   结束
+     * @param typeReference 对象类型
+     * @return {@link Set}<{@link TypedTuple}<{@link T}>>
+     */
+    public <T> Set<TypedTuple<T>> zRangeByScoreWithScores(String key, double min, double max, long start, long end, TypeReference<T> typeReference) {
+        return BeanUtils.ztCopyProperties(zRangeByScoreWithScores(key, min, max, start, end), typeReference);
     }
 
     /**
@@ -1742,6 +1906,32 @@ public class RedisUtils {
     }
 
     /**
+     * 获取集合的元素, 从大到小排序
+     *
+     * @param key   key
+     * @param start 开始
+     * @param end   结束
+     * @param tClass 对象类型
+     * @return {@link Set}<{@link T}>
+     */
+    public <T> Set<T> zReverseRange(String key, long start, long end, Class<T> tClass) {
+        return BeanUtils.zCopyProperties(zReverseRange(key, start, end), tClass);
+    }
+
+    /**
+     * 获取集合的元素, 从大到小排序
+     *
+     * @param key   key
+     * @param start 开始
+     * @param end   结束
+     * @param typeReference 对象类型
+     * @return {@link Set}<{@link T}>
+     */
+    public <T> Set<T> zReverseRange(String key, long start, long end, TypeReference<T> typeReference) {
+        return BeanUtils.zCopyProperties(zReverseRange(key, start, end), typeReference);
+    }
+
+    /**
      * 获取集合的元素, 从大到小排序, 并返回score值
      *
      * @param key   key
@@ -1751,6 +1941,32 @@ public class RedisUtils {
      */
     public Set<TypedTuple<Object>> zReverseRangeWithScores(String key, long start, long end) {
         return redisTemplate.opsForZSet().reverseRangeWithScores(key, start, end);
+    }
+
+    /**
+     * 获取集合的元素, 从大到小排序, 并返回score值
+     *
+     * @param key   key
+     * @param start 开始
+     * @param end   结束
+     * @param tClass 对象类型
+     * @return {@link Set}<{@link TypedTuple}<{@link T}>>
+     */
+    public <T> Set<TypedTuple<T>> zReverseRangeWithScores(String key, long start, long end, Class<T> tClass) {
+        return BeanUtils.ztCopyProperties(zReverseRangeWithScores(key, start, end), tClass);
+    }
+
+    /**
+     * 获取集合的元素, 从大到小排序, 并返回score值
+     *
+     * @param key   key
+     * @param start 开始
+     * @param end   结束
+     * @param typeReference 对象类型
+     * @return {@link Set}<{@link TypedTuple}<{@link T}>>
+     */
+    public <T> Set<TypedTuple<T>> zReverseRangeWithScores(String key, long start, long end, TypeReference<T> typeReference) {
+        return BeanUtils.ztCopyProperties(zReverseRangeWithScores(key, start, end), typeReference);
     }
 
     /**
@@ -1771,10 +1987,62 @@ public class RedisUtils {
      * @param key key
      * @param min 最小值
      * @param max 最大值
+     * @param tClass 对象类型
+     * @return {@link Set}<{@link T}>
+     */
+    public <T> Set<T> zReverseRangeByScore(String key, double min, double max, Class<T> tClass) {
+        return BeanUtils.zCopyProperties(zReverseRangeByScore(key, min, max), tClass);
+    }
+
+    /**
+     * 根据Score值查询集合元素, 从大到小排序
+     *
+     * @param key key
+     * @param min 最小值
+     * @param max 最大值
+     * @param typeReference 对象类型
+     * @return {@link Set}<{@link T}>
+     */
+    public <T> Set<T> zReverseRangeByScore(String key, double min, double max, TypeReference<T> typeReference) {
+        return BeanUtils.zCopyProperties(zReverseRangeByScore(key, min, max), typeReference);
+    }
+
+    /**
+     * 根据Score值查询集合元素, 从大到小排序
+     *
+     * @param key key
+     * @param min 最小值
+     * @param max 最大值
      * @return {@link Set}<{@link TypedTuple}<{@link Object}>>
      */
     public Set<TypedTuple<Object>> zReverseRangeByScoreWithScores(String key, double min, double max) {
         return redisTemplate.opsForZSet().reverseRangeByScoreWithScores(key, min, max);
+    }
+
+    /**
+     * 根据Score值查询集合元素, 从大到小排序
+     *
+     * @param key key
+     * @param min 最小值
+     * @param max 最大值
+     * @param tClass 对象类型
+     * @return {@link Set}<{@link TypedTuple}<{@link T}>>
+     */
+    public <T> Set<TypedTuple<T>> zReverseRangeByScoreWithScores(String key, double min, double max, Class<T> tClass) {
+        return BeanUtils.ztCopyProperties(zReverseRangeByScoreWithScores(key, min, max), tClass);
+    }
+
+    /**
+     * 根据Score值查询集合元素, 从大到小排序
+     *
+     * @param key key
+     * @param min 最小值
+     * @param max 最大值
+     * @param typeReference 对象类型
+     * @return {@link Set}<{@link TypedTuple}<{@link T}>>
+     */
+    public <T> Set<TypedTuple<T>> zReverseRangeByScoreWithScores(String key, double min, double max, TypeReference<T> typeReference) {
+        return BeanUtils.ztCopyProperties(zReverseRangeByScoreWithScores(key, min, max), typeReference);
     }
 
     /**
@@ -1789,6 +2057,36 @@ public class RedisUtils {
      */
     public Set<Object> zReverseRangeByScore(String key, double min, double max, long start, long end) {
         return redisTemplate.opsForZSet().reverseRangeByScore(key, min, max, start, end);
+    }
+
+    /**
+     * 根据Score值查询集合元素, 从大到小排序
+     *
+     * @param key   key
+     * @param min   最小值
+     * @param max   最大值
+     * @param start 开始
+     * @param end   结束
+     * @param tClass 对象类型
+     * @return {@link Set}<{@link T}>
+     */
+    public <T> Set<T> zReverseRangeByScore(String key, double min, double max, long start, long end, Class<T> tClass) {
+        return BeanUtils.zCopyProperties(zReverseRangeByScore(key, min, max, start, end), tClass);
+    }
+
+    /**
+     * 根据Score值查询集合元素, 从大到小排序
+     *
+     * @param key   key
+     * @param min   最小值
+     * @param max   最大值
+     * @param start 开始
+     * @param end   结束
+     * @param typeReference 对象类型
+     * @return {@link Set}<{@link T}>
+     */
+    public <T> Set<T> zReverseRangeByScore(String key, double min, double max, long start, long end, TypeReference<T> typeReference) {
+        return BeanUtils.zCopyProperties(zReverseRangeByScore(key, min, max, start, end), typeReference);
     }
 
     /**
@@ -1827,7 +2125,7 @@ public class RedisUtils {
      * 获取集合中value元素的score值
      *
      * @param key   key
-     * @param value 价值
+     * @param value 值
      * @return {@link Double}
      */
     public Double zScore(String key, Object value) {
@@ -1913,7 +2211,43 @@ public class RedisUtils {
      * @param options 选项
      * @return {@link Cursor}<{@link TypedTuple}<{@link Object}>>
      */
-    public Cursor<TypedTuple<Object>> zScan(String key, ScanOptions options) {
-        return redisTemplate.opsForZSet().scan(key, options);
+    public List<TypedTuple<Object>> zScan(String key, ScanOptions options) {
+        Cursor<TypedTuple<Object>> cursor = redisTemplate.opsForZSet().scan(key, options);
+        try {
+            return cursor.stream().collect(Collectors.toList());
+        }finally {
+            if (!cursor.isClosed()) cursor.isClosed();
+        }
     }
+
+    /**
+     * 迭代哈希表中的元素
+     *
+     * @param key     key
+     * @param options 选项
+     * @param tClass 对象类型
+     * @return {@link Cursor}<{@link TypedTuple}<{@link T}>>
+     */
+    public <T> List<TypedTuple<T>> zScan(String key, ScanOptions options, Class<T> tClass) {
+        return BeanUtils.atCopyProperties(zScan(key, options), tClass);
+    }
+
+    /**
+     * 迭代哈希表中的元素
+     *
+     * @param key     key
+     * @param options 选项
+     * @param typeReference 对象类型
+     * @return {@link Cursor}<{@link TypedTuple}<{@link T}>>
+     */
+    public <T> List<TypedTuple<T>> zScan(String key, ScanOptions options, TypeReference<T> typeReference) {
+        return BeanUtils.atCopyProperties(zScan(key, options), typeReference);
+    }
+
+
+
+
+
+
+
 }
