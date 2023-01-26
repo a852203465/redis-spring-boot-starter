@@ -3,14 +3,12 @@ package cn.darkjrong.redis;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONValidator;
 import com.alibaba.fastjson.TypeReference;
+import org.springframework.data.redis.core.DefaultTypedTuple;
+import org.springframework.data.redis.core.ZSetOperations;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -19,7 +17,38 @@ import java.util.stream.Collectors;
  * @author Rong.Jia
  * @date 2023/01/25
  */
+@SuppressWarnings("ALL")
 public class BeanUtils {
+
+    /**
+     * 复制属性
+     *
+     * @param objects 原对象
+     * @param tClass  目标对象类型
+     * @param <T>     目标对象泛型
+     * @return {@link List}<{@link T}> 目标对象集合
+     */
+    public static <T> Set<T> sCopyProperties(Collection<Object> objects, Class<T> tClass) {
+        if (CollectionUtil.isNotEmpty(objects)) {
+            return objects.stream().map(a -> copyProperties(a, tClass)).collect(Collectors.toSet());
+        }
+        return Collections.emptySet();
+    }
+
+    /**
+     * 复制属性
+     *
+     * @param objects        原对象
+     * @param tTypeReference 目标对象类型
+     * @param <T>            目标对象泛型
+     * @return {@link Set}<{@link T}> 目标对象集合
+     */
+    public static <T> Set<T> sCopyProperties(Collection<Object> objects, TypeReference<T> tTypeReference) {
+        if (CollectionUtil.isNotEmpty(objects)) {
+            return objects.stream().map(a -> copyProperties(a, tTypeReference)).collect(Collectors.toSet());
+        }
+        return Collections.emptySet();
+    }
 
     /**
      * 复制属性
@@ -32,7 +61,7 @@ public class BeanUtils {
     public static <T> T copyProperties(Object object, Class<T> tClass) {
         if (ObjectUtil.isNotNull(object)) {
             String json = JSONValidator.from(object.toString()).validate() ? object.toString() : JSON.toJSONString(object);
-            return JSONObject.parseObject(json, tClass);
+            return JSON.parseObject(json, tClass);
         }
         return null;
     }
@@ -48,7 +77,7 @@ public class BeanUtils {
     public static <T> T copyProperties(Object object, TypeReference<T> tTypeReference) {
         if (ObjectUtil.isNotNull(object)) {
             String json = JSONValidator.from(object.toString()).validate() ? object.toString() : JSON.toJSONString(object);
-            return JSONObject.parseObject(json, tTypeReference);
+            return JSON.parseObject(json, tTypeReference);
         }
         return null;
     }
@@ -117,9 +146,99 @@ public class BeanUtils {
         return Collections.emptyMap();
     }
 
+    /**
+     * 复制属性
+     *
+     * @param typedTuples 输入元组
+     * @param tClass      对象类型
+     * @return {@link Set}<{@link ZSetOperations.TypedTuple}<{@link T}>>
+     */
+    public static <T> Set<ZSetOperations.TypedTuple<T>> ztCopyProperties(Collection<ZSetOperations.TypedTuple<Object>> typedTuples, Class<T> tClass) {
+        if (CollectionUtil.isNotEmpty(typedTuples)) {
+            return typedTuples.stream()
+                    .map(a -> new DefaultTypedTuple<>(BeanUtils.copyProperties(a.getValue(), tClass), a.getScore()))
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+        }
+        return Collections.emptySet();
+    }
 
+    /**
+     * 复制属性
+     *
+     * @param typedTuples 输入元组
+     * @param typeReference      对象类型
+     * @return {@link Set}<{@link ZSetOperations.TypedTuple}<{@link T}>>
+     */
+    public static <T> Set<ZSetOperations.TypedTuple<T>> ztCopyProperties(Collection<ZSetOperations.TypedTuple<Object>> typedTuples, TypeReference<T> typeReference) {
+        if (CollectionUtil.isNotEmpty(typedTuples)) {
+            return typedTuples.stream()
+                    .map(a -> new DefaultTypedTuple<>(BeanUtils.copyProperties(a.getValue(), typeReference), a.getScore()))
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+        }
+        return Collections.emptySet();
+    }
 
+    /**
+     * 复制属性
+     *
+     * @param typedTuples 输入元组
+     * @param typeReference      对象类型
+     * @return {@link List}<{@link ZSetOperations.TypedTuple}<{@link T}>>
+     */
+    public static <T> List<ZSetOperations.TypedTuple<T>> atCopyProperties(Collection<ZSetOperations.TypedTuple<Object>> typedTuples, TypeReference<T> typeReference) {
+        if (CollectionUtil.isNotEmpty(typedTuples)) {
+            return typedTuples.stream()
+                    .map(a -> new DefaultTypedTuple<>(BeanUtils.copyProperties(a.getValue(), typeReference), a.getScore()))
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
 
+    /**
+     * 复制属性
+     *
+     * @param typedTuples 输入元组
+     * @param tClass      对象类型
+     * @return {@link List}<{@link ZSetOperations.TypedTuple}<{@link T}>>
+     */
+    public static <T> List<ZSetOperations.TypedTuple<T>> atCopyProperties(Collection<ZSetOperations.TypedTuple<Object>> typedTuples, Class<T> tClass) {
+        if (CollectionUtil.isNotEmpty(typedTuples)) {
+            return typedTuples.stream()
+                    .map(a -> new DefaultTypedTuple<>(BeanUtils.copyProperties(a.getValue(), tClass), a.getScore()))
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * 复制属性
+     *
+     * @param objects 原对象
+     * @param tClass  目标对象类型
+     * @param <T>     目标对象泛型
+     * @return {@link List}<{@link T}> 目标对象集合
+     */
+    public static <T> Set<T> zCopyProperties(Collection<Object> objects, Class<T> tClass) {
+        if (CollectionUtil.isNotEmpty(objects)) {
+            return objects.stream().map(a -> copyProperties(a, tClass)).collect(Collectors.toCollection(LinkedHashSet::new));
+        }
+        return Collections.emptySet();
+    }
+
+    /**
+     * 复制属性
+     *
+     * @param objects        原对象
+     * @param tTypeReference 目标对象类型
+     * @param <T>            目标对象泛型
+     * @return {@link Set}<{@link T}> 目标对象集合
+     */
+    public static <T> Set<T> zCopyProperties(Collection<Object> objects, TypeReference<T> tTypeReference) {
+        if (CollectionUtil.isNotEmpty(objects)) {
+            return objects.stream().map(a -> copyProperties(a, tTypeReference)).collect(Collectors.toCollection(LinkedHashSet::new));
+        }
+        return Collections.emptySet();
+    }
 
 
 
