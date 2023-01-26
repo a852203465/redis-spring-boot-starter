@@ -1096,8 +1096,7 @@ public class RedisUtils {
      * @return {@link Object}
      */
     public Object lBRightPopAndLeftPush(String sourceKey, String destinationKey, long timeout, TimeUnit unit) {
-        return redisTemplate.opsForList().rightPopAndLeftPush(sourceKey,
-                destinationKey, timeout, unit);
+        return redisTemplate.opsForList().rightPopAndLeftPush(sourceKey, destinationKey, timeout, unit);
     }
 
     /**
@@ -1166,6 +1165,28 @@ public class RedisUtils {
      */
     public Object sPop(String key) {
         return redisTemplate.opsForSet().pop(key);
+    }
+
+    /**
+     * 移除并返回集合的一个随机元素
+     *
+     * @param key    key
+     * @param tClass 对象类型
+     * @return {@link T}
+     */
+    public <T> T sPop(String key, Class<T> tClass) {
+        return BeanUtils.copyProperties(sPop(key), tClass);
+    }
+
+    /**
+     * 移除并返回集合的一个随机元素
+     *
+     * @param key    key
+     * @param typeReference 对象类型
+     * @return {@link T}
+     */
+    public <T> T sPop(String key, TypeReference<T> typeReference) {
+        return BeanUtils.copyProperties(sPop(key), typeReference);
     }
 
     /**
