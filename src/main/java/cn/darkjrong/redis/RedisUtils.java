@@ -710,7 +710,7 @@ public class RedisUtils {
      * @return {@link Map}<{@link String}, {@link T}>
      */
     public <T> Map<String, T> hScan(String key, ScanOptions options, Class<T> tClass) {
-        Map<Object, Object> objectMap = this.hScan(key, options);
+        Map<Object, Object> objectMap = hScan(key, options);
         if (CollectionUtil.isNotEmpty(objectMap)) {
             return objectMap.entrySet().stream()
                     .collect(Collectors.toMap(a -> BeanUtils.copyProperties(a.getKey(), String.class),
@@ -728,7 +728,7 @@ public class RedisUtils {
      * @return {@link Map}<{@link String}, {@link T}>
      */
     public <T> Map<String, T> hScan(String key, ScanOptions options, TypeReference<T> typeReference) {
-        Map<Object, Object> objectMap = this.hScan(key, options);
+        Map<Object, Object> objectMap = hScan(key, options);
         if (CollectionUtil.isNotEmpty(objectMap)) {
             return objectMap.entrySet().stream()
                     .collect(Collectors.toMap(a -> BeanUtils.copyProperties(a.getKey(), String.class),
@@ -1301,6 +1301,16 @@ public class RedisUtils {
     }
 
     /**
+     * 获取key集合的并集
+     *
+     * @param keys keys
+     * @return {@link Set}<{@link Object}>
+     */
+    public Set<Object> sUnion(Collection<String> keys) {
+        return redisTemplate.opsForSet().union(keys);
+    }
+
+    /**
      * 获取key集合与多个集合的并集
      *
      * @param key       key
@@ -1336,6 +1346,17 @@ public class RedisUtils {
     }
 
     /**
+     * key集合的并集存储到destKey中
+     *
+     * @param destKey 目标key
+     * @param keys    keys
+     * @return {@link Long}
+     */
+    public Long sUnionAndStore(Collection<String> keys, String destKey) {
+        return redisTemplate.opsForSet().unionAndStore(keys, destKey);
+    }
+
+    /**
      * 获取两个集合的差集
      *
      * @param key      key
@@ -1358,6 +1379,16 @@ public class RedisUtils {
     }
 
     /**
+     * 获取key集合的差集
+     *
+     * @param keys keys
+     * @return {@link Set}<{@link Object}>
+     */
+    public Set<Object> sDifference(Collection<String> keys) {
+        return redisTemplate.opsForSet().difference(keys);
+    }
+
+    /**
      * key集合与otherKey集合的差集存储到destKey中
      *
      * @param key      key
@@ -1366,8 +1397,7 @@ public class RedisUtils {
      * @return {@link Long}
      */
     public Long sDifference(String key, String otherKey, String destKey) {
-        return redisTemplate.opsForSet().differenceAndStore(key, otherKey,
-                destKey);
+        return redisTemplate.opsForSet().differenceAndStore(key, otherKey, destKey);
     }
 
     /**
@@ -1378,20 +1408,51 @@ public class RedisUtils {
      * @param destKey   目标key
      * @return {@link Long}
      */
-    public Long sDifference(String key, Collection<String> otherKeys,
-                            String destKey) {
-        return redisTemplate.opsForSet().differenceAndStore(key, otherKeys,
-                destKey);
+    public Long sDifference(String key, Collection<String> otherKeys, String destKey) {
+        return redisTemplate.opsForSet().differenceAndStore(key, otherKeys, destKey);
     }
 
     /**
-     * 获取集合所有元素
+     * key集合的差集存储到destKey中
+     *
+     * @param destKey 目标key
+     * @param keys    keys
+     * @return {@link Long}
+     */
+    public Long sDifference(Collection<String> keys, String destKey) {
+        return redisTemplate.opsForSet().differenceAndStore(keys, destKey);
+    }
+
+    /**
+     * 获取Set集合的所有元素
      *
      * @param key key
      * @return {@link Set}<{@link Object}>
      */
-    public Set<Object> setMembers(String key) {
+    public Set<Object> sMembers(String key) {
         return redisTemplate.opsForSet().members(key);
+    }
+
+    /**
+     * 获取Set集合的所有元素
+     *
+     * @param key    key
+     * @param tClass 对象类型
+     * @return {@link List}<{@link T}>
+     */
+    public <T> List<T> sMembers(String key, Class<T> tClass) {
+        return BeanUtils.copyProperties(sMembers(key), tClass);
+    }
+
+    /**
+     * 获取Set集合的所有元素
+     *
+     * @param key key
+     * @param typeReference 对象类型
+     * @return {@link List}<{@link T}>
+     */
+    public <T> List<T> sMembers(String key, TypeReference<T> typeReference) {
+        return BeanUtils.copyProperties(sMembers(key), typeReference);
     }
 
     /**
@@ -1402,6 +1463,28 @@ public class RedisUtils {
      */
     public Object sRandomMember(String key) {
         return redisTemplate.opsForSet().randomMember(key);
+    }
+
+    /**
+     * 随机获取集合中的一个元素
+     *
+     * @param key    key
+     * @param tClass 对象类型
+     * @return {@link T}
+     */
+    public <T> T sRandomMember(String key, Class<T> tClass) {
+        return BeanUtils.copyProperties(sRandomMember(key), tClass);
+    }
+
+    /**
+     * 随机获取集合中的一个元素
+     *
+     * @param key key
+     * @param typeReference 对象类型
+     * @return {@link Object}
+     */
+    public <T> T sRandomMember(String key, TypeReference<T> typeReference) {
+        return BeanUtils.copyProperties(sRandomMember(key), typeReference);
     }
 
     /**
@@ -1416,6 +1499,30 @@ public class RedisUtils {
     }
 
     /**
+     * 随机获取集合中count个元素
+     *
+     * @param tClass 对象类型
+     * @param key    key
+     * @param count  个数
+     * @return {@link List}<{@link T}>
+     */
+    public <T> List<T> sRandomMembers(String key, long count, Class<T> tClass) {
+        return BeanUtils.copyProperties(sRandomMembers(key, count), tClass);
+    }
+
+    /**
+     * 随机获取集合中count个元素
+     *
+     * @param key           key
+     * @param typeReference 对象类型
+     * @param count         个数
+     * @return {@link List}<{@link T}>
+     */
+    public <T> List<T> sRandomMembers(String key, long count, TypeReference<T> typeReference) {
+        return BeanUtils.copyProperties(sRandomMembers(key, count), typeReference);
+    }
+
+    /**
      * 随机获取集合中count个元素并且去除重复的
      *
      * @param key   key
@@ -1427,14 +1534,67 @@ public class RedisUtils {
     }
 
     /**
+     * 随机获取集合中count个元素并且去除重复的
+     *
+     * @param key    key
+     * @param count  个数
+     * @param tClass 对象类型
+     * @return {@link List}<{@link T}>
+     */
+    public <T> List<T> sDistinctRandomMembers(String key, long count, Class<T> tClass) {
+        return BeanUtils.copyProperties(sDistinctRandomMembers(key, count), tClass);
+    }
+
+    /**
+     * 随机获取集合中count个元素并且去除重复的
+     *
+     * @param key    key
+     * @param count  个数
+     * @param typeReference 对象类型
+     * @return {@link List}<{@link T}>
+     */
+    public <T> List<T> sDistinctRandomMembers(String key, long count, TypeReference<T> typeReference) {
+        return BeanUtils.copyProperties(sDistinctRandomMembers(key, count), typeReference);
+    }
+
+    /**
      * 迭代哈希表中的元素
      *
      * @param key     key
      * @param options 选项
-     * @return {@link Cursor}<{@link Object}>
+     * @return {@link List}<{@link Object}>
      */
-    public Cursor<Object> sScan(String key, ScanOptions options) {
-        return redisTemplate.opsForSet().scan(key, options);
+    public List<Object> sScan(String key, ScanOptions options) {
+        Cursor<Object> cursor = redisTemplate.opsForSet().scan(key, options);;
+        try {
+            return cursor.stream().collect(Collectors.toList());
+        }finally {
+            if (!cursor.isClosed()) cursor.close();
+        }
+    }
+
+    /**
+     * 迭代哈希表中的元素
+     *
+     * @param key     key
+     * @param tClass 对象类型
+     * @param options 选项
+     * @return {@link List}<{@link Object}>
+     */
+    public <T> List<T> sScan(String key, ScanOptions options, Class<T> tClass) {
+       return BeanUtils.copyProperties(sScan(key, options), tClass);
+    }
+
+    /**
+     * 迭代哈希表中的元素
+     *
+     * @param key     key
+     * @param typeReference 对象类型
+     * @param options 选项
+     * @return {@link List}<{@link Object}>
+     */
+    public <T> List<T> sScan(String key, ScanOptions options, TypeReference<T> typeReference) {
+        return BeanUtils.copyProperties(sScan(key, options), typeReference);
     }
 
     /*------------------zSet相关操作--------------------------------*/
