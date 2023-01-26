@@ -1223,6 +1223,16 @@ public class RedisUtils {
     }
 
     /**
+     * 获取key集合的交集
+     *
+     * @param keys keys
+     * @return {@link Set}<{@link Object}>
+     */
+    public Set<Object> sIntersect(Collection<String> keys) {
+        return redisTemplate.opsForSet().intersect(keys);
+    }
+
+    /**
      * 获取两个集合的交集
      *
      * @param key      key
@@ -1245,7 +1255,18 @@ public class RedisUtils {
     }
 
     /**
-     * key集合与otherKey集合的交集存储到destKey集合中
+     * key集合的交集存储到destKey集合中
+     *
+     * @param destKey 目标key
+     * @param keys    keys
+     * @return {@link Long}
+     */
+    public Long sIntersectAndStore(Collection<String> keys, String destKey) {
+        return redisTemplate.opsForSet().intersectAndStore(keys, destKey);
+    }
+
+    /**
+     * key与otherKey集合的交集存储到destKey集合中
      *
      * @param key      key
      * @param otherKey 其他key
@@ -1257,7 +1278,7 @@ public class RedisUtils {
     }
 
     /**
-     * key集合与多个集合的交集存储到destKey集合中
+     * key与多个集合的交集存储到destKey集合中
      *
      * @param key       key
      * @param otherKeys 其他keys
@@ -1265,8 +1286,7 @@ public class RedisUtils {
      * @return {@link Long}
      */
     public Long sIntersectAndStore(String key, Collection<String> otherKeys, String destKey) {
-        return redisTemplate.opsForSet().intersectAndStore(key, otherKeys,
-                destKey);
+        return redisTemplate.opsForSet().intersectAndStore(key, otherKeys, destKey);
     }
 
     /**
