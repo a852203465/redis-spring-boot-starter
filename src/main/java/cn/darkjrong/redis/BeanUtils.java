@@ -5,7 +5,6 @@ import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONValidator;
 import com.alibaba.fastjson.TypeReference;
-import org.springframework.data.redis.core.DefaultTypedTuple;
 import org.springframework.data.redis.core.ZSetOperations;
 
 import java.util.*;
@@ -156,7 +155,7 @@ public class BeanUtils {
     public static <T> Set<ZSetOperations.TypedTuple<T>> ztCopyProperties(Collection<ZSetOperations.TypedTuple<Object>> typedTuples, Class<T> tClass) {
         if (CollectionUtil.isNotEmpty(typedTuples)) {
             return typedTuples.stream()
-                    .map(a -> new DefaultTypedTuple<>(BeanUtils.copyProperties(a.getValue(), tClass), a.getScore()))
+                    .map(a -> ZSetOperations.TypedTuple.of(BeanUtils.copyProperties(a.getValue(), tClass), a.getScore()))
                     .collect(Collectors.toCollection(LinkedHashSet::new));
         }
         return Collections.emptySet();
@@ -172,7 +171,7 @@ public class BeanUtils {
     public static <T> Set<ZSetOperations.TypedTuple<T>> ztCopyProperties(Collection<ZSetOperations.TypedTuple<Object>> typedTuples, TypeReference<T> typeReference) {
         if (CollectionUtil.isNotEmpty(typedTuples)) {
             return typedTuples.stream()
-                    .map(a -> new DefaultTypedTuple<>(BeanUtils.copyProperties(a.getValue(), typeReference), a.getScore()))
+                    .map(a -> ZSetOperations.TypedTuple.of(BeanUtils.copyProperties(a.getValue(), typeReference), a.getScore()))
                     .collect(Collectors.toCollection(LinkedHashSet::new));
         }
         return Collections.emptySet();
@@ -188,7 +187,7 @@ public class BeanUtils {
     public static <T> List<ZSetOperations.TypedTuple<T>> atCopyProperties(Collection<ZSetOperations.TypedTuple<Object>> typedTuples, TypeReference<T> typeReference) {
         if (CollectionUtil.isNotEmpty(typedTuples)) {
             return typedTuples.stream()
-                    .map(a -> new DefaultTypedTuple<>(BeanUtils.copyProperties(a.getValue(), typeReference), a.getScore()))
+                    .map(a -> ZSetOperations.TypedTuple.of(BeanUtils.copyProperties(a.getValue(), typeReference), a.getScore()))
                     .collect(Collectors.toList());
         }
         return Collections.emptyList();
@@ -204,7 +203,7 @@ public class BeanUtils {
     public static <T> List<ZSetOperations.TypedTuple<T>> atCopyProperties(Collection<ZSetOperations.TypedTuple<Object>> typedTuples, Class<T> tClass) {
         if (CollectionUtil.isNotEmpty(typedTuples)) {
             return typedTuples.stream()
-                    .map(a -> new DefaultTypedTuple<>(BeanUtils.copyProperties(a.getValue(), tClass), a.getScore()))
+                    .map(a -> ZSetOperations.TypedTuple.of(BeanUtils.copyProperties(a.getValue(), tClass), a.getScore()))
                     .collect(Collectors.toList());
         }
         return Collections.emptyList();
